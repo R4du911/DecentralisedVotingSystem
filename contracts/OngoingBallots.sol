@@ -14,7 +14,7 @@ contract OngoingBallots is VotingHelper{
         uint endTime;
     }
 
-    function getOngoingBallots() external view {
+    function getOngoingBallots() external view returns (Ballot[] memory) {
         uint count = 0;
         for (uint index = 0; index < ballots.length; index++) {
             if (isBallotOngoing(index)) {
@@ -39,6 +39,6 @@ contract OngoingBallots is VotingHelper{
             }
         }
 
-        emit ReturnOngoingBallots(ongoingBallots);
+        return ongoingBallots;
     }
 }

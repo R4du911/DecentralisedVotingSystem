@@ -15,7 +15,7 @@ contract ClosedBallots is VotingHelper{
         uint[] allVoteCounts;
     }
 
-    function getBallotResult(uint _ballotId) private returns (BallotResult memory) {
+    function getBallotResult(uint _ballotId) public returns (BallotResult memory) {
         require(_ballotId < ballots.length);
         require(!isBallotOngoing(_ballotId));
 
@@ -44,7 +44,7 @@ contract ClosedBallots is VotingHelper{
         });
     }
 
-    function getClosedBallots() external view {
+    function getClosedBallots() external view returns (BallotResult[] memory) {
         uint count = 0;
         for (uint index = 0; index < ballots.length; index++) {
             if (!isBallotOngoing(index)) {
@@ -62,6 +62,6 @@ contract ClosedBallots is VotingHelper{
             }
         }
 
-        emit ReturnClosedBallots(closedBallotsResults);
+        return closedBallotsResults;
     }
 }
