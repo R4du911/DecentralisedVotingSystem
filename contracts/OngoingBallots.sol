@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./VotingHelper.sol";
+import "./ClosedBallots.sol";
 
-contract OngoingBallots is VotingHelper{
+contract OngoingBallots is ClosedBallots{
+    constructor(address initialOwner) ClosedBallots(initialOwner) {}
 
     event ReturnOngoingBallots(OngoingBallot[] ongoingBallots);
 
@@ -15,7 +16,7 @@ contract OngoingBallots is VotingHelper{
         bool hasSenderVoted;
     }
 
-    function getOngoingBallots() external view returns (Ballot[] memory) {
+    function getOngoingBallots() external view returns (OngoingBallot[] memory) {
         uint count = 0;
         for (uint index = 0; index < ballots.length; index++) {
             if (isBallotOngoing(index)) {

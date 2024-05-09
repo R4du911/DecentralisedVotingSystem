@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./VotingHelper.sol";
+import "./OngoingBallots.sol";
 
-contract VotingLogic is VotingHelper{
+contract VotingLogic is OngoingBallots{
+    constructor(address initialOwner) OngoingBallots(initialOwner) {}
 
     event Voted(uint ballotId, address voter, uint option);
     event BallotClosed(uint ballotId, uint winningOption);
@@ -37,5 +38,4 @@ contract VotingLogic is VotingHelper{
 
         emit BallotClosed(_ballotId, winningOption);
     }
-    
 }

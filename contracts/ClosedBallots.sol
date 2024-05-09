@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "./VotingHelper.sol";
 
 contract ClosedBallots is VotingHelper{
+    constructor(address initialOwner) VotingHelper(initialOwner) {}
 
     event ReturnClosedBallots(BallotResult[] closedBallotsResults);
 
@@ -15,7 +16,7 @@ contract ClosedBallots is VotingHelper{
         uint[] allVoteCounts;
     }
 
-    function getBallotResult(uint _ballotId) public returns (BallotResult memory) {
+    function getBallotResult(uint _ballotId) public view returns (BallotResult memory) {
         require(_ballotId < ballots.length);
         require(!isBallotOngoing(_ballotId));
 

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract BallotFactory is Ownable {
+    constructor(address initialOwner) Ownable(initialOwner) {}
 
     event NewBallot(uint ballotId, string question, string[] options, uint startTime, uint endTime);
 
@@ -23,13 +24,11 @@ contract BallotFactory is Ownable {
         require(_startTime >= block.timestamp);
         require(_endTime > _startTime);
 
-        Ballot memory newBallot = Ballot({
-            question: _question,
-            options: _options,
-            startTime: _startTime,
-            endTime: _endTime
-        });
-        ballots.push(newBallot);
+        Ballot storage newBallot = ballots.push();
+        newBallot.question = _question;
+        newBallot.options = _options;
+        newBallot.startTime = _startTime;
+        newBallot.endTime = _endTime;
 
         emit NewBallot(ballots.length - 1, _question, _options, _startTime, _endTime);
     }
