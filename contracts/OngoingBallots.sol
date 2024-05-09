@@ -12,6 +12,7 @@ contract OngoingBallots is VotingHelper{
         string[] options;
         uint startTime;
         uint endTime;
+        bool hasSenderVoted;
     }
 
     function getOngoingBallots() external view returns (Ballot[] memory) {
@@ -31,7 +32,8 @@ contract OngoingBallots is VotingHelper{
                     question: ballots[allBallotsIndex].question,
                     options: ballots[allBallotsIndex].options,
                     startTime: ballots[allBallotsIndex].startTime,
-                    endTime: ballots[allBallotsIndex].endTime
+                    endTime: ballots[allBallotsIndex].endTime,
+                    hasSenderVoted: ballots[allBallotsIndex].hasVoted[msg.sender]
                 });
 
                 ongoingBallots[ongoingBallotIndex] = ongoingBallot;
