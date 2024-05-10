@@ -93,12 +93,104 @@ contract("VotingSystem", (accounts) => {
             assert.equal(ongoingBallots[0].question, question);
             assert.deepEqual(ongoingBallots[0].options, options);
 
-            await time.increase(time.duration.hours(23));
+            await time.increase(time.duration.minutes(2));
 
             const closingBallotResult = await contractInstance.closeBallot(ballotId, { from : owner });
 
             assert.equal(closingBallotResult.receipt.status, true);
             assert.equal(closingBallotResult.logs[0].event, "BallotClosed");
+
+            const closedBallots = await contractInstance.getClosedBallots({ from : owner });
+
+            assert.isArray(closedBallots);
+            assert.equal(closedBallots[0].question, question);
+        })
+    })
+
+    describe("Get Ongoing Ballots", () => {
+        it("should retrieve all ongoing ballots with the sender's voting status", async () => {
+            const questionBallotOne = "Do you support this proposal?";
+            const optionsBallotOne = ["Yes", "No", "Abstain"];
+            const startTimeBallotOne = (await time.latest()) + time.duration.minutes(1);
+            const endTimeBallotOne = startTimeBallotOne + time.duration.days(1);
+    
+            const createdBallotOneResult = await contractInstance.createBallot(questionBallotOne, optionsBallotOne, 
+                startTimeBallotOne, endTimeBallotOne, { from: owner });
+            const ballotOneId = createdBallotOneResult.logs[0].args.ballotId.toNumber();
+
+            const questionBallotTwo = "Do you agree?";
+            const optionsBallotTwo = ["Yes", "No", "Maybe"];
+            const startTimeBallotTwo = (await time.latest()) + time.duration.minutes(1);
+            const endTimeBallotTwo = startTimeBallotTwo + time.duration.days(1);
+
+            await contractInstance.createBallot(questionBallotTwo, optionsBallotTwo, startTimeBallotTwo, 
+                endTimeBallotTwo, { from : owner });
+
+            await time.increase(time.duration.minutes(2));
+
+            await contractInstance.vote(ballotOneId, 1, { from: alice });
+
+            const ongoingBallots = await contractInstance.getOngoingBallots({ from: alice });
+    
+            assert.isArray(ongoingBallots);
+            assert.equal(ongoingBallots[0].question, questionBallotOne);
+            assert.deepEqual(ongoingBallots[0].options, optionsBallotOne);
+            assert.equal(ongoingBallots[0].hasSenderVoted, true);
+
+            assert.equal(ongoingBallots[1].question, questionBallotTwo);
+            assert.deepEqual(ongoingBallots[1].options, optionsBallotTwo);
+            assert.equal(ongoingBallots[1].hasSenderVoted, false);
+        })
+    })
+
+    describe("Get Closed Ballots", () => {
+        it("should retrieve all closed ballots with the voter's result", async () => {
+            const questionBallotOne = "Do you support this proposal?";
+            const optionsBallotOne = ["Yes", "No", "Abstain"];
+            const startTimeBallotOne = (await time.latest()) + time.duration.minutes(1);
+            const endTimeBallotOne = startTimeBallotOne + time.duration.days(1);
+    
+            const createdBallotOneResult = await contractInstance.createBallot(questionBallotOne, optionsBallotOne, 
+                startTimeBallotOne, endTimeBallotOne, { from: owner });
+            const ballotOneId = createdBallotOneResult.logs[0].args.ballotId.toNumber();
+
+            const questionBallotTwo = "Do you agree?";
+            const optionsBallotTwo = ["Yes", "No", "Maybe"];
+            const startTimeBallotTwo = (await time.latest()) + time.duration.minutes(1);
+            const endTimeBallotTwo = startTimeBallotTwo + time.duration.days(1);
+
+            const createdBallotTwoResult = await contractInstance.createBallot(questionBallotTwo, optionsBallotTwo, 
+                startTimeBallotTwo, endTimeBallotTwo, { from : owner });
+            const ballotTwoId = createdBallotTwoResult.logs[0].args.ballotId.toNumber();
+
+            await time.increase(time.duration.minutes(2));
+
+            await contractInstance.vote(ballotOneId, 1, { from: owner });
+            await contractInstance.vote(ballotOneId, 1, { from: alice });
+            await contractInstance.vote(ballotOneId, 0, { from: bob });
+
+            await contractInstance.vote(ballotTwoId, 0, { from: owner });
+
+            await time.increase(time.duration.days(1));
+
+            const closedBallots = await contractInstance.getClosedBallots({ from : owner });
+
+            assert.isArray(closedBallots);
+            assert.equal(closedBallots[0].question, questionBallotOne);
+            assert.equal(closedBallots[0].winningOption, "No");
+            assert.equal(closedBallots[0].winningVotesNumber, 2);
+            assert.equal(closedBallots[0].allVotesNumber, 3);
+            assert.equal(closedBallots[0].allVoteCounts[0], 1);
+            assert.equal(closedBallots[0].allVoteCounts[1], 2);
+            assert.equal(closedBallots[0].allVoteCounts[2], 0);
+
+            assert.equal(closedBallots[1].question, questionBallotTwo);
+            assert.equal(closedBallots[1].winningOption, "Yes");
+            assert.equal(closedBallots[1].winningVotesNumber, 1);
+            assert.equal(closedBallots[1].allVotesNumber, 1);
+            assert.equal(closedBallots[1].allVoteCounts[0], 1);
+            assert.equal(closedBallots[1].allVoteCounts[1], 0);
+            assert.equal(closedBallots[1].allVoteCounts[2], 0);
         })
     })
 })
