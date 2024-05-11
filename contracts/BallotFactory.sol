@@ -4,8 +4,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract BallotFactory is Ownable {
-    constructor(address initialOwner) Ownable(initialOwner) {}
-
     event NewBallot(uint ballotId, string question, string[] options, uint startTime, uint endTime);
 
     struct Ballot {

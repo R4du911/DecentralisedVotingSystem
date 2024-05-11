@@ -4,8 +4,6 @@ pragma solidity ^0.8.0;
 import "./BallotFactory.sol";
 
 contract VotingHelper is BallotFactory {
-    constructor(address initialOwner) BallotFactory(initialOwner) {}
-
     modifier isOpenBallot(uint _ballotId) {
         require(_ballotId < ballots.length);
         require(block.timestamp >= ballots[_ballotId].startTime);

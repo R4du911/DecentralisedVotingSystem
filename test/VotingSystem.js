@@ -7,7 +7,7 @@ contract("VotingSystem", (accounts) => {
     let contractInstance;
 
     beforeEach(async () => {
-        contractInstance = await VotingSystem.new(owner);
+        contractInstance = await VotingSystem.new();
     });
 
     describe("Ballot Creation", () => {

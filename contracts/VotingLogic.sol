@@ -4,8 +4,6 @@ pragma solidity ^0.8.0;
 import "./OngoingBallots.sol";
 
 contract VotingLogic is OngoingBallots{
-    constructor(address initialOwner) OngoingBallots(initialOwner) {}
-
     event Voted(uint ballotId, address voter, uint option);
     event BallotClosed(uint ballotId, uint winningOption);
     

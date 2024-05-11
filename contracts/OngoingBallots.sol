@@ -4,8 +4,6 @@ pragma solidity ^0.8.0;
 import "./ClosedBallots.sol";
 
 contract OngoingBallots is ClosedBallots{
-    constructor(address initialOwner) ClosedBallots(initialOwner) {}
-
     event ReturnOngoingBallots(OngoingBallot[] ongoingBallots);
 
     struct OngoingBallot {

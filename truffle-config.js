@@ -8,8 +8,6 @@ const { MNEMONIC, PROJECT_ID, PRIVATE_KEY } = process.env;
 const keyBuffer = Buffer.from(PRIVATE_KEY, 'hex');
 const base64PrivateKey = keyBuffer.toString('base64');
 
-console.log(base64PrivateKey);
-
 module.exports = {
   networks: {
     rinkeby: {
@@ -32,7 +30,9 @@ module.exports = {
     development: {
       host: "127.0.0.1",     
       port: 8545,            
-      network_id: "*",       
+      network_id: "*", 
+      gas: 6721975, 
+      gasPrice: 20000000000      
     },
   },
 
@@ -42,7 +42,7 @@ module.exports = {
 
   compilers: {
     solc: {
-      version: "0.8.21",   
+      version: "0.8.17",   
     }
   },
 };
