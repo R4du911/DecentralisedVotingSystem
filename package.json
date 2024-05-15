@@ -2,6 +2,7 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.2",
     "dotenv": "^16.4.5",
+    "fs": "^0.0.1-security",
     "loom-truffle-provider": "^0.13.0",
     "truffle-hdwallet-provider": "^1.0.17",
     "web3": "^4.8.0"

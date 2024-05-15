@@ -5,9 +5,41 @@
     <title>Voting System</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.3.0/web3.min.js"></script>
-    <script src="./scripts.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
 
-    <link rel="stylesheet" href="./styles.css">
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .ballot-section {
+            margin-bottom: 40px;
+        }
+
+        .ballot-section h2 {
+            margin-bottom: 20px;
+        }
+
+        .ballot-section p {
+            margin-bottom: 20px;
+        }
+
+        .ballot-section form input[type="text"], 
+        .ballot-section form input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .ballot-section form input[type="submit"] {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -40,5 +72,141 @@
             <div id="ongoingBallots">Loading...</div>
         </div>
     </div>
+
+    <script>
+        async function startApp() {
+            try {
+                const deployAddress = "0x45c3FE20c8006A571Ae8eb398c112DfCCd2CC11e";
+                const abi = await fetch('./contracts_VotingSystem_sol_VotingSystem.abi').then(response => response.json());
+
+                window.web3 = new Web3("http://localhost:8545");
+
+                const votingSystemContract = new web3.eth.Contract(abi);
+
+                const accounts = await web3.eth.getAccounts();
+                const deployerAddress = accounts[0];
+
+                votingSystem = new web3.eth.Contract(abi, deployAddress);
+
+                userAccount = deployerAddress;
+
+                await updateBallots();
+
+                setInterval(async function () {
+                    const newAccounts = await web3.eth.getAccounts();
+                    if (newAccounts[0] !== userAccount) {
+                        userAccount = newAccounts[0];
+                        await updateBallots();
+                    }
+                }, 500);
+
+                document.getElementById('createBallotForm').onsubmit = createBallot;
+
+            } catch (error) {
+                console.error('Error starting the app:', error);
+            }
+        }
+
+        async function updateBallots() {
+            const closedBallots = await getClosedBallots();
+            displayClosedBallots(closedBallots);
+
+            const ongoingBallots = await getOngoingBallots();
+            displayOngoingBallots(ongoingBallots);
+        }
+
+        function displayClosedBallots(ballotResults) {
+            $("#closedBallots").empty();
+
+            if (!ballotResults || ballotResults.length === 0) {
+                $("#closedBallots").append("<p>No closed ballots found.</p>");
+                return;
+            }
+
+            for (const ballotResult of ballotResults) {
+                $("#closedBallots").append(`
+                    <div class="closedBallot">
+                        <ul>
+                            <li>Question: ${ballotResult.question}</li>
+                            <li>Winning Option: ${ballotResult.winningOption}</li>
+                            <li>Winning Votes Number: ${ballotResult.winningVotesNumber}</li>
+                            <li>All Votes Number: ${ballotResult.allVotesNumber}</li>
+                            <li>Vote count option 1: ${ballotResult.allVoteCounts[0]}</li>
+                        </ul>
+                    </div>
+                `);
+            }
+        }
+
+        function displayOngoingBallots(ballotResults) {
+            $("#ongoingBallots").empty();
+
+            if (!ballotResults || ballotResults.length === 0) {
+                $("#ongoingBallots").append("<p>No ongoing ballots found.</p>");
+                return;
+            }
+
+            for (const ballotResult of ballotResults) {
+                $("#ongoingBallots").append(`
+                    <div class="ongoingBallot">
+                        <ul>
+                            <li>Question: ${ballotResult.question}</li>
+                            <li>Option 1: ${ballotResult.options[0]}</li>
+                            <li>Start Time: ${ballotResult.startTime}</li>
+                            <li>End Time: ${ballotResult.endTime}</li>
+                            <li>Have you voted: ${ballotResult.hasSenderVoted}</li>
+                        </ul>
+                    </div>
+                `);
+            }
+        }
+
+        async function getClosedBallots() {
+            try {
+                const result = await votingSystem.methods.getClosedBallots().call();
+                console.log('Closed ballots fetched:', result);
+                return result;
+            } catch (error) {
+                console.error('Error fetching closed ballots:', error);
+                return [];
+            }
+        }
+
+        async function getOngoingBallots() {
+            try {
+                const accounts = await web3.eth.getAccounts();
+                const result = await votingSystem.methods.getOngoingBallots().call({ from: accounts[0] });
+                console.log('Ongoing ballots fetched:', result);
+                return result;
+            } catch (error) {
+                console.error('Error fetching ongoing ballots:', error);
+                return [];
+            }
+        }
+
+        async function createBallot(event) {
+            event.preventDefault();
+
+            const question = document.getElementById('question').value;
+            const options = document.getElementById('options').value.split(',');
+            const startTime = parseInt(document.getElementById('startTime').value);
+            const endTime = parseInt(document.getElementById('endTime').value);
+
+            try {
+                const accounts = await web3.eth.getAccounts();
+                const result = await votingSystem.methods.createBallot(question, options, startTime, endTime).send({ from: accounts[0] });
+                console.log(result);
+                alert('Ballot created successfully!');
+                await updateBallots();
+            } catch (error) {
+                console.error('Error creating ballot:', error);
+                alert('Failed to create ballot.');
+            }
+        }
+
+        window.addEventListener('load', function () {
+            startApp();
+        });
+    </script>
 </body>
 </html>
