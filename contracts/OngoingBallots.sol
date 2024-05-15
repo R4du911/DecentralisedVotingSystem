@@ -4,11 +4,10 @@ pragma solidity ^0.8.0;
 import "./ClosedBallots.sol";
 
 contract OngoingBallots is ClosedBallots{
-    event ReturnOngoingBallots(OngoingBallot[] ongoingBallots);
-
     struct OngoingBallot {
         string question;
         string[] options;
+        uint ballotId;
         uint startTime;
         uint endTime;
         bool hasSenderVoted;
@@ -30,6 +29,7 @@ contract OngoingBallots is ClosedBallots{
                 OngoingBallot memory ongoingBallot = OngoingBallot({
                     question: ballots[allBallotsIndex].question,
                     options: ballots[allBallotsIndex].options,
+                    ballotId: allBallotsIndex,
                     startTime: ballots[allBallotsIndex].startTime,
                     endTime: ballots[allBallotsIndex].endTime,
                     hasSenderVoted: ballots[allBallotsIndex].hasVoted[msg.sender]

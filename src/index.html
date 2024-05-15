@@ -71,6 +71,11 @@
             <h2>Ongoing Ballots</h2>
             <div id="ongoingBallots">Loading...</div>
         </div>
+
+        <div class="ballot-section">
+            <h2>Upcoming Ballots</h2>
+            <div id="upcomingBallots">Loading...</div>
+        </div>
     </div>
 
     <script>
@@ -79,7 +84,7 @@
 
         async function startApp() {
             try {
-                const deployAddress = "0xCc3CfF3F708F9049Bb6c6c723287ebD3a67542c4";
+                const deployAddress = "0xD86e14515Bf225e9DC4f0b97EBBa0111634987C0";
                 const abi = await fetch('./contracts_VotingSystem_sol_VotingSystem.abi').then(response => response.json());
 
                 window.web3 = new Web3("http://localhost:8545");
@@ -94,10 +99,16 @@
                 await updateBallots();
                 document.getElementById('createBallotForm').onsubmit = createBallot;
 
+                setInterval(async function () {
+                    await updateBallots();
+                }, 5000);
+
             } catch (error) {
                 console.error('Error starting the app:', error);
             }
         }
+
+
 
         async function updateBallots() {
             try {
@@ -106,10 +117,15 @@
 
                 const ongoingBallots = await getOngoingBallots();
                 displayOngoingBallots(ongoingBallots);
+
+                const upcomingBallots = await getUpcomingBallots();
+                displayUpcomingBallots(upcomingBallots);
             } catch (error) {
                 console.error('Error updating ballots:', error);
             }
         }
+
+
 
         function displayClosedBallots(ballotResults) {
             $("#closedBallots").empty();
@@ -120,6 +136,11 @@
             }
 
             for (const ballotResult of ballotResults) {
+                let voteCountsHtml = "";
+                for (let i = 0; i < ballotResult.allVoteCounts.length; i++) {
+                    voteCountsHtml += `<li>Vote count option ${i + 1}: ${ballotResult.allVoteCounts[i]}</li>`;
+                }
+
                 $("#closedBallots").append(`
                     <div class="closedBallot">
                         <ul>
@@ -127,12 +148,13 @@
                             <li>Winning Option: ${ballotResult.winningOption}</li>
                             <li>Winning Votes Number: ${ballotResult.winningVotesNumber}</li>
                             <li>All Votes Number: ${ballotResult.allVotesNumber}</li>
-                            <li>Vote count option 1: ${ballotResult.allVoteCounts[0]}</li>
+                            ${voteCountsHtml}
                         </ul>
                     </div>
                 `);
             }
         }
+
 
         function displayOngoingBallots(ballotResults) {
             $("#ongoingBallots").empty();
@@ -143,11 +165,16 @@
             }
 
             for (const ballotResult of ballotResults) {
+                let optionsHtml = "";
+                for (let i = 0; i < ballotResult.options.length; i++) {
+                    optionsHtml += `<li>Option ${i + 1}: ${ballotResult.options[i]}</li>`;
+                }
+
                 $("#ongoingBallots").append(`
                     <div class="ongoingBallot">
                         <ul>
                             <li>Question: ${ballotResult.question}</li>
-                            <li>Option 1: ${ballotResult.options[0]}</li>
+                            ${optionsHtml}
                             <li>Start Time: ${ballotResult.startTime}</li>
                             <li>End Time: ${ballotResult.endTime}</li>
                             <li>Have you voted: ${ballotResult.hasSenderVoted}</li>
@@ -157,10 +184,37 @@
             }
         }
 
+        function displayUpcomingBallots(ballotResults) {
+            $("#upcomingBallots").empty();
+
+            if (!ballotResults || ballotResults.length === 0) {
+                $("#upcomingBallots").append("<p>No upcoming ballots found.</p>");
+                return;
+            }
+
+            for (const ballotResult of ballotResults) {
+                let optionsHtml = "";
+                for (let i = 0; i < ballotResult.options.length; i++) {
+                    optionsHtml += `<li>Option ${i + 1}: ${ballotResult.options[i]}</li>`;
+                }
+
+                $("#upcomingBallots").append(`
+                    <div class="upcomingBallot">
+                        <ul>
+                            <li>Question: ${ballotResult.question}</li>
+                            ${optionsHtml}
+                            <li>Start Time: ${ballotResult.startTime}</li>
+                        </ul>
+                    </div>
+                `);
+            }
+        }
+
+
+
         async function getClosedBallots() {
             try {
                 const result = await votingSystem.methods.getClosedBallots().call();
-                console.log('Closed ballots fetched:', result);
                 return result;
             } catch (error) {
                 console.error('Error fetching closed ballots:', error);
@@ -172,10 +226,19 @@
             try {
                 const accounts = await web3.eth.getAccounts();
                 const result = await votingSystem.methods.getOngoingBallots().call({ from: accounts[0] });
-                console.log('Ongoing ballots fetched:', result);
                 return result;
             } catch (error) {
                 console.error('Error fetching ongoing ballots:', error);
+                return [];
+            }
+        }
+
+        async function getUpcomingBallots() {
+            try {
+                const result = await votingSystem.methods.getUpcomingBallots().call();
+                return result;
+            } catch (error) {
+                console.error('Error fetching upcoming ballots:', error);
                 return [];
             }
         }
@@ -191,8 +254,9 @@
             try {
                 const accounts = await web3.eth.getAccounts();
                 const result = await votingSystem.methods.createBallot(question, options, startTime, endTime).send({ from: accounts[0], gas: 300000 });
-                console.log(result);
+
                 alert('Ballot created successfully!');
+
                 await updateBallots();
             } catch (error) {
                 console.error('Error creating ballot:', error);

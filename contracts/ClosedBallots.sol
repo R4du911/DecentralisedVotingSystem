@@ -4,11 +4,10 @@ pragma solidity ^0.8.0;
 import "./VotingHelper.sol";
 
 contract ClosedBallots is VotingHelper{
-    event ReturnClosedBallots(BallotResult[] closedBallotsResults);
-
     struct BallotResult {
         string question;
         string winningOption;
+        uint ballotId;
         uint winningVotesNumber;
         uint allVotesNumber;
         uint[] allVoteCounts;
@@ -37,6 +36,7 @@ contract ClosedBallots is VotingHelper{
         return BallotResult({
             question: ballots[_ballotId].question,
             winningOption: ballots[_ballotId].options[winningOptionIndex],
+            ballotId: _ballotId,
             winningVotesNumber: highestVotes,
             allVotesNumber: allVotesNumber,
             allVoteCounts: voteCounts
@@ -46,7 +46,7 @@ contract ClosedBallots is VotingHelper{
     function getClosedBallots() external view returns (BallotResult[] memory) {
         uint count = 0;
         for (uint index = 0; index < ballots.length; index++) {
-            if (!isBallotOngoing(index)) {
+            if (!isBallotOngoing(index) && !(block.timestamp < ballots[index].startTime)) {
                 count++;
             }
         }
@@ -55,7 +55,7 @@ contract ClosedBallots is VotingHelper{
         uint closedBallotIndex = 0;
 
         for (uint allBallotsIndex = 0; allBallotsIndex < ballots.length; allBallotsIndex++) {
-            if (!isBallotOngoing(allBallotsIndex)) {
+            if (!isBallotOngoing(allBallotsIndex) && !(block.timestamp < ballots[allBallotsIndex].startTime)) {
                 closedBallotsResults[closedBallotIndex] = getBallotResult(allBallotsIndex);
                 closedBallotIndex++;
             }

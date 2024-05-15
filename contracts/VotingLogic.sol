@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./OngoingBallots.sol";
+import "./UpcomingBallots.sol";
 
-contract VotingLogic is OngoingBallots{
+contract VotingLogic is UpcomingBallots{
     event Voted(uint ballotId, address voter, uint option);
     event BallotClosed(uint ballotId, uint winningOption);
     

@@ -53,15 +53,13 @@ contract("VotingSystem", (accounts) => {
             const ongoingBallotsAlice = await contractInstance.getOngoingBallots({ from: alice });
     
             assert.isArray(ongoingBallotsAlice);
-            assert.equal(ongoingBallotsAlice[0].question, question);
-            assert.deepEqual(ongoingBallotsAlice[0].options, options);
+            assert.equal(ongoingBallotsAlice[0].ballotId, ballotId);
             assert.equal(ongoingBallotsAlice[0].hasSenderVoted, true);
 
             const ongoingBallotsBob = await contractInstance.getOngoingBallots({ from: bob });
     
             assert.isArray(ongoingBallotsBob);
-            assert.equal(ongoingBallotsBob[0].question, question);
-            assert.deepEqual(ongoingBallotsBob[0].options, options);
+            assert.equal(ongoingBallotsBob[0].ballotId, ballotId);
             assert.equal(ongoingBallotsBob[0].hasSenderVoted, false);
         })
 
@@ -97,8 +95,7 @@ contract("VotingSystem", (accounts) => {
             const ongoingBallots = await contractInstance.getOngoingBallots({ from: owner });
     
             assert.isArray(ongoingBallots);
-            assert.equal(ongoingBallots[0].question, question);
-            assert.deepEqual(ongoingBallots[0].options, options);
+            assert.equal(ongoingBallots[0].ballotId, ballotId);
 
             await time.increase(time.duration.minutes(2));
 
@@ -110,7 +107,7 @@ contract("VotingSystem", (accounts) => {
             const closedBallots = await contractInstance.getClosedBallots({ from : owner });
 
             assert.isArray(closedBallots);
-            assert.equal(closedBallots[0].question, question);
+            assert.equal(closedBallots[0].ballotId, ballotId);
         })
     })
 
@@ -130,8 +127,9 @@ contract("VotingSystem", (accounts) => {
             const startTimeBallotTwo = (await time.latest()) + time.duration.minutes(1);
             const endTimeBallotTwo = startTimeBallotTwo + time.duration.days(1);
 
-            await contractInstance.createBallot(questionBallotTwo, optionsBallotTwo, startTimeBallotTwo, 
+            const createdBallotTwoResult = await contractInstance.createBallot(questionBallotTwo, optionsBallotTwo, startTimeBallotTwo, 
                 endTimeBallotTwo, { from : owner });
+            const ballotTwoId = createdBallotTwoResult.logs[0].args.ballotId.toNumber();
 
             await time.increase(time.duration.minutes(2));
 
@@ -140,12 +138,10 @@ contract("VotingSystem", (accounts) => {
             const ongoingBallots = await contractInstance.getOngoingBallots({ from: alice });
     
             assert.isArray(ongoingBallots);
-            assert.equal(ongoingBallots[0].question, questionBallotOne);
-            assert.deepEqual(ongoingBallots[0].options, optionsBallotOne);
+            assert.equal(ongoingBallots[0].ballotId, ballotOneId);
             assert.equal(ongoingBallots[0].hasSenderVoted, true);
 
-            assert.equal(ongoingBallots[1].question, questionBallotTwo);
-            assert.deepEqual(ongoingBallots[1].options, optionsBallotTwo);
+            assert.equal(ongoingBallots[1].ballotId, ballotTwoId);
             assert.equal(ongoingBallots[1].hasSenderVoted, false);
         })
     })
@@ -183,6 +179,7 @@ contract("VotingSystem", (accounts) => {
             const closedBallots = await contractInstance.getClosedBallots({ from : owner });
 
             assert.isArray(closedBallots);
+            assert.equal(closedBallots[0].ballotId, ballotOneId);
             assert.equal(closedBallots[0].question, questionBallotOne);
             assert.equal(closedBallots[0].winningOption, "No");
             assert.equal(closedBallots[0].winningVotesNumber, 2);
@@ -191,6 +188,7 @@ contract("VotingSystem", (accounts) => {
             assert.equal(closedBallots[0].allVoteCounts[1], 2);
             assert.equal(closedBallots[0].allVoteCounts[2], 0);
 
+            assert.equal(closedBallots[1].ballotId, ballotTwoId);
             assert.equal(closedBallots[1].question, questionBallotTwo);
             assert.equal(closedBallots[1].winningOption, "Yes");
             assert.equal(closedBallots[1].winningVotesNumber, 1);
@@ -198,6 +196,41 @@ contract("VotingSystem", (accounts) => {
             assert.equal(closedBallots[1].allVoteCounts[0], 1);
             assert.equal(closedBallots[1].allVoteCounts[1], 0);
             assert.equal(closedBallots[1].allVoteCounts[2], 0);
+        })
+    })
+
+    describe("Get Upcoming Ballots", () => {
+        it("should retrieve all upcoming ballots", async () => {
+            const questionBallotOne = "Do you support this proposal?";
+            const optionsBallotOne = ["Yes", "No", "Abstain"];
+            const startTimeBallotOne = (await time.latest()) + time.duration.minutes(10);
+            const endTimeBallotOne = startTimeBallotOne + time.duration.days(1);
+    
+            const createdBallotOneResult = await contractInstance.createBallot(questionBallotOne, optionsBallotOne, 
+                startTimeBallotOne, endTimeBallotOne, { from: owner });
+            const ballotOneId = createdBallotOneResult.logs[0].args.ballotId.toNumber();
+
+            const questionBallotTwo = "Do you agree?";
+            const optionsBallotTwo = ["Yes", "No", "Maybe"];
+            const startTimeBallotTwo = (await time.latest()) + time.duration.minutes(1);
+            const endTimeBallotTwo = startTimeBallotTwo + time.duration.days(1);
+
+            const createdBallotTwoResult = await contractInstance.createBallot(questionBallotTwo, optionsBallotTwo, 
+                startTimeBallotTwo, endTimeBallotTwo, { from : owner });
+            const ballotTwoId = createdBallotTwoResult.logs[0].args.ballotId.toNumber();
+
+            const upcomingBallots = await contractInstance.getUpcomingBallots({ from : owner });
+
+            assert.isArray(upcomingBallots);
+            assert.equal(upcomingBallots[0].ballotId, ballotOneId);
+            assert.equal(upcomingBallots[0].question, questionBallotOne);
+            assert.deepEqual(upcomingBallots[0].options, optionsBallotOne);
+            assert.equal(upcomingBallots[0].startTime, startTimeBallotOne);
+
+            assert.equal(upcomingBallots[1].ballotId, ballotTwoId);
+            assert.equal(upcomingBallots[1].question, questionBallotTwo);
+            assert.deepEqual(upcomingBallots[1].options, optionsBallotTwo);
+            assert.equal(upcomingBallots[1].startTime, startTimeBallotTwo);
         })
     })
 })

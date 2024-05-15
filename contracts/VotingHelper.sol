@@ -16,4 +16,9 @@ contract VotingHelper is BallotFactory {
         return block.timestamp >= ballots[_ballotId].startTime &&
                block.timestamp < ballots[_ballotId].endTime;
     }
+
+    function isBallotUpcoming(uint _ballotId) public view returns (bool) {
+        require(_ballotId < ballots.length);
+        return block.timestamp < ballots[_ballotId].startTime;
+    } 
 }
