@@ -42,12 +42,6 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "startTime",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
           "name": "endTime",
           "type": "uint256"
         }
@@ -116,11 +110,6 @@
         },
         {
           "internalType": "uint256",
-          "name": "startTime",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
           "name": "endTime",
           "type": "uint256"
         }
@@ -152,11 +141,6 @@
           "internalType": "string[]",
           "name": "_options",
           "type": "string[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_startTime",
-          "type": "uint256"
         },
         {
           "internalType": "uint256",
@@ -288,11 +272,6 @@
             },
             {
               "internalType": "uint256",
-              "name": "startTime",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
               "name": "endTime",
               "type": "uint256"
             },
@@ -311,41 +290,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getUpcomingBallots",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "string",
-              "name": "question",
-              "type": "string"
-            },
-            {
-              "internalType": "string[]",
-              "name": "options",
-              "type": "string[]"
-            },
-            {
-              "internalType": "uint256",
-              "name": "ballotId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "startTime",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct UpcomingBallots.UpcomingBallot[]",
-          "name": "",
-          "type": "tuple[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "uint256",
@@ -354,25 +298,6 @@
         }
       ],
       "name": "isBallotOngoing",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_ballotId",
-          "type": "uint256"
-        }
-      ],
-      "name": "isBallotUpcoming",
       "outputs": [
         {
           "internalType": "bool",

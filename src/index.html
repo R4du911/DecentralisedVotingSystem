@@ -52,9 +52,6 @@
                 <label for="options">Options (comma-separated):</label>
                 <input type="text" id="options" name="options"><br><br>
 
-                <label for="startTime">Start Time (UNIX timestamp):</label>
-                <input type="number" id="startTime" name="startTime"><br><br>
-
                 <label for="endTime">End Time (UNIX timestamp):</label>
                 <input type="number" id="endTime" name="endTime"><br><br>
 
@@ -71,11 +68,6 @@
             <h2>Ongoing Ballots</h2>
             <div id="ongoingBallots">Loading...</div>
         </div>
-
-        <div class="ballot-section">
-            <h2>Upcoming Ballots</h2>
-            <div id="upcomingBallots">Loading...</div>
-        </div>
     </div>
 
     <script>
@@ -84,7 +76,7 @@
 
         async function startApp() {
             try {
-                const deployAddress = "0xD86e14515Bf225e9DC4f0b97EBBa0111634987C0";
+                const deployAddress = "0x1F5eEd475BdEB34C606345cC997dB1C91ec132eE";
                 const abi = await fetch('./contracts_VotingSystem_sol_VotingSystem.abi').then(response => response.json());
 
                 window.web3 = new Web3("http://localhost:8545");
@@ -117,9 +109,6 @@
 
                 const ongoingBallots = await getOngoingBallots();
                 displayOngoingBallots(ongoingBallots);
-
-                const upcomingBallots = await getUpcomingBallots();
-                displayUpcomingBallots(upcomingBallots);
             } catch (error) {
                 console.error('Error updating ballots:', error);
             }
@@ -175,35 +164,8 @@
                         <ul>
                             <li>Question: ${ballotResult.question}</li>
                             ${optionsHtml}
-                            <li>Start Time: ${ballotResult.startTime}</li>
-                            <li>End Time: ${ballotResult.endTime}</li>
+                            <li>End Time: ${new Date(ballotResult.endTime * 1000).toLocaleString()}</li>
                             <li>Have you voted: ${ballotResult.hasSenderVoted}</li>
-                        </ul>
-                    </div>
-                `);
-            }
-        }
-
-        function displayUpcomingBallots(ballotResults) {
-            $("#upcomingBallots").empty();
-
-            if (!ballotResults || ballotResults.length === 0) {
-                $("#upcomingBallots").append("<p>No upcoming ballots found.</p>");
-                return;
-            }
-
-            for (const ballotResult of ballotResults) {
-                let optionsHtml = "";
-                for (let i = 0; i < ballotResult.options.length; i++) {
-                    optionsHtml += `<li>Option ${i + 1}: ${ballotResult.options[i]}</li>`;
-                }
-
-                $("#upcomingBallots").append(`
-                    <div class="upcomingBallot">
-                        <ul>
-                            <li>Question: ${ballotResult.question}</li>
-                            ${optionsHtml}
-                            <li>Start Time: ${ballotResult.startTime}</li>
                         </ul>
                     </div>
                 `);
@@ -233,27 +195,16 @@
             }
         }
 
-        async function getUpcomingBallots() {
-            try {
-                const result = await votingSystem.methods.getUpcomingBallots().call();
-                return result;
-            } catch (error) {
-                console.error('Error fetching upcoming ballots:', error);
-                return [];
-            }
-        }
-
         async function createBallot(event) {
             event.preventDefault();
 
             const question = document.getElementById('question').value;
             const options = document.getElementById('options').value.split(',');
-            const startTime = parseInt(document.getElementById('startTime').value);
             const endTime = parseInt(document.getElementById('endTime').value);
 
             try {
                 const accounts = await web3.eth.getAccounts();
-                const result = await votingSystem.methods.createBallot(question, options, startTime, endTime).send({ from: accounts[0], gas: 300000 });
+                const result = await votingSystem.methods.createBallot(question, options, endTime).send({ from: accounts[0], gas: 300000 });
 
                 alert('Ballot created successfully!');
 

@@ -8,7 +8,6 @@ contract OngoingBallots is ClosedBallots{
         string question;
         string[] options;
         uint ballotId;
-        uint startTime;
         uint endTime;
         bool hasSenderVoted;
     }
@@ -30,7 +29,6 @@ contract OngoingBallots is ClosedBallots{
                     question: ballots[allBallotsIndex].question,
                     options: ballots[allBallotsIndex].options,
                     ballotId: allBallotsIndex,
-                    startTime: ballots[allBallotsIndex].startTime,
                     endTime: ballots[allBallotsIndex].endTime,
                     hasSenderVoted: ballots[allBallotsIndex].hasVoted[msg.sender]
                 });

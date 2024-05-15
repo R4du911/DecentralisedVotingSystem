@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./UpcomingBallots.sol";
+import "./OngoingBallots.sol";
 
-contract VotingLogic is UpcomingBallots{
+contract VotingLogic is OngoingBallots{
     event Voted(uint ballotId, address voter, uint option);
     event BallotClosed(uint ballotId, uint winningOption);
     
@@ -20,7 +20,7 @@ contract VotingLogic is UpcomingBallots{
 
     function closeBallot(uint _ballotId) external onlyOwner {
         require(_ballotId < ballots.length);
-        require((block.timestamp >= ballots[_ballotId].startTime) && (block.timestamp < ballots[_ballotId].endTime));
+        require(block.timestamp < ballots[_ballotId].endTime);
 
         ballots[_ballotId].endTime = block.timestamp;
 

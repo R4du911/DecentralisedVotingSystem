@@ -46,7 +46,7 @@ contract ClosedBallots is VotingHelper{
     function getClosedBallots() external view returns (BallotResult[] memory) {
         uint count = 0;
         for (uint index = 0; index < ballots.length; index++) {
-            if (!isBallotOngoing(index) && !(block.timestamp < ballots[index].startTime)) {
+            if (!isBallotOngoing(index)) {
                 count++;
             }
         }
@@ -55,7 +55,7 @@ contract ClosedBallots is VotingHelper{
         uint closedBallotIndex = 0;
 
         for (uint allBallotsIndex = 0; allBallotsIndex < ballots.length; allBallotsIndex++) {
-            if (!isBallotOngoing(allBallotsIndex) && !(block.timestamp < ballots[allBallotsIndex].startTime)) {
+            if (!isBallotOngoing(allBallotsIndex)) {
                 closedBallotsResults[closedBallotIndex] = getBallotResult(allBallotsIndex);
                 closedBallotIndex++;
             }
