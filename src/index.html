@@ -74,32 +74,24 @@
     </div>
 
     <script>
+        let votingSystem;
+        let userAccount;
+
         async function startApp() {
             try {
-                const deployAddress = "0xaecEdD024BA87Fa27A9AfD768CEE890d3e513bB2";
+                const deployAddress = "0xCc3CfF3F708F9049Bb6c6c723287ebD3a67542c4";
                 const abi = await fetch('./contracts_VotingSystem_sol_VotingSystem.abi').then(response => response.json());
 
                 window.web3 = new Web3("http://localhost:8545");
 
-                const votingSystemContract = new web3.eth.Contract(abi);
+                votingSystem = new web3.eth.Contract(abi, deployAddress);
 
                 const accounts = await web3.eth.getAccounts();
                 const deployerAddress = accounts[0];
 
-                votingSystem = new web3.eth.Contract(abi, deployAddress);
-
                 userAccount = deployerAddress;
 
                 await updateBallots();
-
-                setInterval(async function () {
-                    const newAccounts = await web3.eth.getAccounts();
-                    if (newAccounts[0] !== userAccount) {
-                        userAccount = newAccounts[0];
-                        await updateBallots();
-                    }
-                }, 5000);
-
                 document.getElementById('createBallotForm').onsubmit = createBallot;
 
             } catch (error) {
@@ -108,11 +100,15 @@
         }
 
         async function updateBallots() {
-            const closedBallots = await getClosedBallots();
-            displayClosedBallots(closedBallots);
+            try {
+                const closedBallots = await getClosedBallots();
+                displayClosedBallots(closedBallots);
 
-            const ongoingBallots = await getOngoingBallots();
-            displayOngoingBallots(ongoingBallots);
+                const ongoingBallots = await getOngoingBallots();
+                displayOngoingBallots(ongoingBallots);
+            } catch (error) {
+                console.error('Error updating ballots:', error);
+            }
         }
 
         function displayClosedBallots(ballotResults) {
@@ -194,7 +190,7 @@
 
             try {
                 const accounts = await web3.eth.getAccounts();
-                const result = await votingSystem.methods.createBallot(question, options, startTime, endTime).send({ from: accounts[0] });
+                const result = await votingSystem.methods.createBallot(question, options, startTime, endTime).send({ from: accounts[0], gas: 300000 });
                 console.log(result);
                 alert('Ballot created successfully!');
                 await updateBallots();
