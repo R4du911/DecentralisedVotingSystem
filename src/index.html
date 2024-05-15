@@ -76,7 +76,7 @@
     <script>
         async function startApp() {
             try {
-                const deployAddress = "0x45c3FE20c8006A571Ae8eb398c112DfCCd2CC11e";
+                const deployAddress = "0xaecEdD024BA87Fa27A9AfD768CEE890d3e513bB2";
                 const abi = await fetch('./contracts_VotingSystem_sol_VotingSystem.abi').then(response => response.json());
 
                 window.web3 = new Web3("http://localhost:8545");
@@ -98,7 +98,7 @@
                         userAccount = newAccounts[0];
                         await updateBallots();
                     }
-                }, 500);
+                }, 5000);
 
                 document.getElementById('createBallotForm').onsubmit = createBallot;
 

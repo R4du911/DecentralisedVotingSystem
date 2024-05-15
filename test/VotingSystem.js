@@ -50,15 +50,22 @@ contract("VotingSystem", (accounts) => {
             assert.equal(result.logs[0].args.voter, alice)
             assert.equal(result.logs[0].args.option.toNumber(), 1);
     
-            const ongoingBallots = await contractInstance.getOngoingBallots({ from: alice });
+            const ongoingBallotsAlice = await contractInstance.getOngoingBallots({ from: alice });
     
-            assert.isArray(ongoingBallots);
-            assert.equal(ongoingBallots[0].question, question);
-            assert.deepEqual(ongoingBallots[0].options, options);
-            assert.equal(ongoingBallots[0].hasSenderVoted, true);
+            assert.isArray(ongoingBallotsAlice);
+            assert.equal(ongoingBallotsAlice[0].question, question);
+            assert.deepEqual(ongoingBallotsAlice[0].options, options);
+            assert.equal(ongoingBallotsAlice[0].hasSenderVoted, true);
+
+            const ongoingBallotsBob = await contractInstance.getOngoingBallots({ from: bob });
+    
+            assert.isArray(ongoingBallotsBob);
+            assert.equal(ongoingBallotsBob[0].question, question);
+            assert.deepEqual(ongoingBallotsBob[0].options, options);
+            assert.equal(ongoingBallotsBob[0].hasSenderVoted, false);
         })
 
-        it("shoule be able to cast only one vote per ballot", async () => {
+        it("should be able to cast only one vote per ballot", async () => {
             const question = "Do you support this proposal?";
             const options = ["Yes", "No", "Abstain"];
             const startTime = (await time.latest()) + time.duration.minutes(1); 
