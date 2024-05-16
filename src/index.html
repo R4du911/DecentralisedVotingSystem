@@ -65,7 +65,6 @@
         <div>
             <label for="accountSelect">Select Account:</label>
             <select id="accountSelect" onchange="selectAccount(event)">
-                <!-- Options will be populated by JavaScript -->
             </select>
         </div>
 
@@ -103,7 +102,7 @@
 
         async function startApp() {
             try {
-                const deployAddress = "0xacBAE620Fb2cEa28364D37Ebc6Ea795ad3125f29";
+                const deployAddress = "0xeF02Cd44dD62A648B26a2d21E5218B85D9c21D6e";
                 const abi = await fetch('./contracts_VotingSystem_sol_VotingSystem.abi').then(response => response.json());
 
                 window.web3 = new Web3("http://localhost:8545");
@@ -196,7 +195,6 @@
                     optionsHtml += `<li>Option ${i + 1}: ${ballotResult.options[i]}</li>`;
                 }
 
-                // Create unique form and input IDs
                 const formId = `voteForm${ballotResult.ballotId}`;
                 const inputId = `optionIndex${ballotResult.ballotId}`;
 
