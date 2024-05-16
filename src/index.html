@@ -56,6 +56,7 @@
         .ongoingBallot button {
             padding: 10px 20px;
             cursor: pointer;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -170,6 +171,10 @@
                     optionsHtml += `<li>Option ${i + 1}: ${ballotResult.options[i]}</li>`;
                 }
 
+                // Create unique form and input IDs
+                const formId = `voteForm${ballotResult.ballotId}`;
+                const inputId = `optionIndex${ballotResult.ballotId}`;
+
                 $("#ongoingBallots").append(`
                     <div class="ongoingBallot">
                         <ul>
@@ -179,6 +184,13 @@
                             <li>Have you voted: ${ballotResult.hasSenderVoted}</li>
                         </ul>
                         <button onclick="closeBallot(${ballotResult.ballotId})">Close</button>
+                        ${!ballotResult.hasSenderVoted ? `
+                            <form id="${formId}" onsubmit="vote(event, ${ballotResult.ballotId})">
+                                <label for="${inputId}">Option Index:</label>
+                                <input type="number" id="${inputId}" name="optionIndex" min="0" max="${ballotResult.options.length}">
+                                <button type="submit">Vote</button>
+                            </form>
+                        ` : ''}
                     </div>
                 `);
             }
@@ -227,7 +239,28 @@
                 alert('Ballot closed successfully!');
                 await updateBallots();
             } catch (error) {
+                console.error('Error closing ballot:', error);
                 alert('Failed to close ballot.');
+            }
+        }
+
+        async function vote(event, ballotId) {
+            event.preventDefault();
+            const inputElement = document.getElementById(`optionIndex${ballotId}`);
+            const optionIndex = parseInt(inputElement.value) - 1;
+
+            if (isNaN(optionIndex)) {
+                alert('Please enter a valid option index.');
+                return;
+            }
+
+            try {
+                await votingSystem.methods.vote(ballotId, optionIndex).send({ from: userAccount, gas: 300000 });
+                alert('Vote cast successfully!');
+                await updateBallots();
+            } catch (error) {
+                console.error('Error casting vote:', error);
+                alert('Failed to cast vote.');
             }
         }
 
