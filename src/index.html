@@ -39,6 +39,24 @@
             padding: 10px 20px;
             cursor: pointer;
         }
+
+        .ongoingBallot {
+            margin-bottom: 20px;
+        }
+
+        .ongoingBallot ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .ongoingBallot li {
+            margin-bottom: 10px;
+        }
+
+        .ongoingBallot button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -76,7 +94,7 @@
 
         async function startApp() {
             try {
-                const deployAddress = "0x1F5eEd475BdEB34C606345cC997dB1C91ec132eE";
+                const deployAddress = "0xacBAE620Fb2cEa28364D37Ebc6Ea795ad3125f29";
                 const abi = await fetch('./contracts_VotingSystem_sol_VotingSystem.abi').then(response => response.json());
 
                 window.web3 = new Web3("http://localhost:8545");
@@ -84,9 +102,7 @@
                 votingSystem = new web3.eth.Contract(abi, deployAddress);
 
                 const accounts = await web3.eth.getAccounts();
-                const deployerAddress = accounts[0];
-
-                userAccount = deployerAddress;
+                userAccount = accounts[0];
 
                 await updateBallots();
                 document.getElementById('createBallotForm').onsubmit = createBallot;
@@ -100,8 +116,6 @@
             }
         }
 
-
-
         async function updateBallots() {
             try {
                 const closedBallots = await getClosedBallots();
@@ -113,8 +127,6 @@
                 console.error('Error updating ballots:', error);
             }
         }
-
-
 
         function displayClosedBallots(ballotResults) {
             $("#closedBallots").empty();
@@ -144,7 +156,6 @@
             }
         }
 
-
         function displayOngoingBallots(ballotResults) {
             $("#ongoingBallots").empty();
 
@@ -167,12 +178,11 @@
                             <li>End Time: ${new Date(ballotResult.endTime * 1000).toLocaleString()}</li>
                             <li>Have you voted: ${ballotResult.hasSenderVoted}</li>
                         </ul>
+                        <button onclick="closeBallot(${ballotResult.ballotId})">Close</button>
                     </div>
                 `);
             }
         }
-
-
 
         async function getClosedBallots() {
             try {
@@ -186,8 +196,7 @@
 
         async function getOngoingBallots() {
             try {
-                const accounts = await web3.eth.getAccounts();
-                const result = await votingSystem.methods.getOngoingBallots().call({ from: accounts[0] });
+                const result = await votingSystem.methods.getOngoingBallots().call({ from: userAccount });
                 return result;
             } catch (error) {
                 console.error('Error fetching ongoing ballots:', error);
@@ -203,15 +212,22 @@
             const endTime = parseInt(document.getElementById('endTime').value);
 
             try {
-                const accounts = await web3.eth.getAccounts();
-                const result = await votingSystem.methods.createBallot(question, options, endTime).send({ from: accounts[0], gas: 300000 });
-
+                await votingSystem.methods.createBallot(question, options, endTime).send({ from: userAccount, gas: 300000 });
                 alert('Ballot created successfully!');
-
                 await updateBallots();
             } catch (error) {
                 console.error('Error creating ballot:', error);
                 alert('Failed to create ballot.');
+            }
+        }
+
+        async function closeBallot(ballotId) {
+            try {
+                await votingSystem.methods.closeBallot(ballotId).send({ from: userAccount, gas: 300000 });
+                alert('Ballot closed successfully!');
+                await updateBallots();
+            } catch (error) {
+                alert('Failed to close ballot.');
             }
         }
 
